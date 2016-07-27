@@ -1,0 +1,28 @@
+{
+  "name": "hermione-teamcity-reporter",
+  "version": "0.0.0",
+  "description": "Plugin to report results for TeamCity CI",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:gemini-testing/hermione-teamcity-reporter.git"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "npm run lint && npm run unit",
+    "unit": "mocha test"
+  },
+  "author": "Eugene Gavryushin <job.egavr@yandex.ru>",
+  "license": "ISC",
+  "dependencies": {
+    "teamcity-service-messages": "^0.1.8"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "^3.1.1",
+    "eslint-config-gemini-testing": "^2.0.0",
+    "hermione": "^0.9.1",
+    "mocha": "^2.5.3",
+    "sinon": "^1.17.4"
+  }
+}

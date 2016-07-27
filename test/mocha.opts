@@ -1,0 +1,4 @@
+--require test/setup
+--recursive
+--reporter spec
+--timeout 200
