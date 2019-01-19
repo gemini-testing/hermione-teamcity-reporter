@@ -32,6 +32,7 @@ describe('handlers', () => {
         sandbox.stub(path, 'resolve', path.join.bind(path, '<cwd>'));
         sandbox.stub(fs, 'ensureDirSync');
         sandbox.stub(fs, 'copy', resolveImmediately);
+        sandbox.stub(fs, 'outputFile', resolveImmediately);
         saveDiffTo = sandbox.spy(resolveImmediately);
         handlers = handlersModule.getHandlers({});
     });
@@ -371,15 +372,16 @@ describe('handlers', () => {
             const test = stubTest({
                 title: 'test',
                 browserId: 'bro',
-                err: {screenshot: 'path/to/err'}
+                err: {screenshot: {path: {base64: 'encodedScreenshot'}}}
             });
 
             handlers.onTestFail(test);
 
             assert.calledWith(
-              fs.copy,
-              'path/to/err',
-              'hermione-images/test/bro/Error.png'
+              fs.outputFile,
+              'hermione-images/test/bro/Error.png',
+              'encodedScreenshot',
+              'base64'
             );
             assert.calledWith(
               tsm.publishArtifacts,
