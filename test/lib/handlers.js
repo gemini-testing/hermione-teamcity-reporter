@@ -366,5 +366,31 @@ describe('handlers', () => {
             });
             assert.calledWith(console.log, 'Message(.teamcity/hermione-images/test/bro/bar.diff.png)');
         });
+
+        it('should copy & report error image', () => {
+            const test = stubTest({
+                title: 'test',
+                browserId: 'bro',
+                err: {screenshot: 'path/to/err'}
+            });
+
+            handlers.onTestFail(test);
+
+            assert.calledWith(
+              fs.copy,
+              'path/to/err',
+              'hermione-images/test/bro/Error.png'
+            );
+            assert.calledWith(
+              tsm.publishArtifacts,
+              '<cwd>/hermione-images/test/bro/Error.png => .teamcity/hermione-images/test/bro'
+            );
+            assert.calledWithMatch(tsm.Message, 'testMetadata', {
+                testName: 'test [bro]',
+                type: 'image',
+                value: '.teamcity/hermione-images/test/bro/Error.png'
+            });
+            assert.calledWith(console.log, 'Message(.teamcity/hermione-images/test/bro/Error.png)');
+        });
     });
 });
