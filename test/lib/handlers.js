@@ -372,7 +372,7 @@ describe('handlers', () => {
             const test = stubTest({
                 title: 'test',
                 browserId: 'bro',
-                err: {screenshot: {path: {base64: 'encodedScreenshot'}}}
+                err: {screenshot: {base64: 'encodedScreenshot'}}
             });
 
             handlers.onTestFail(test);
