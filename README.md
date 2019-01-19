@@ -21,7 +21,12 @@ module.exports = {
 };
 ```
 
-Besides, you can switch on or switch off the plugin depending on the environment, for example, this way:
+## Options
+
+### enabled
+
+Boolean, condition for enabling the plugin.
+For example, you can switch on or switch off the plugin depending on the environment:
 
 ```js
 module.exports = {
@@ -33,3 +38,18 @@ module.exports = {
     }
 };
 ```
+
+### imagesDir
+
+String, directory to save images to. `hermione-images` by default.
+
+```
+module.exports = {
+    plugins: {
+        'teamcity-reporter': {
+            imagesDir: 'path/to/my/dir'
+        }
+    }
+};
+```
+
