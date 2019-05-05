@@ -16,7 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "fs-extra": "^7.0.1",
-    "teamcity-service-messages": "^0.1.8"
+    "teamcity-service-messages": "^0.1.10"
   },
   "devDependencies": {
     "chai": "^3.5.0",
