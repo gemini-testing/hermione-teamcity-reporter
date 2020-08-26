@@ -138,21 +138,21 @@ describe('handlers', () => {
             );
             assert.calledWith(
               tsm.publishArtifacts,
-              '<cwd>/hermione-images/test/bro/foo.reference.png => .teamcity/hermione-images/test/bro'
+              '<cwd>/hermione-images/test/bro/foo.reference.png => hermione-images/test/bro'
             );
             assert.calledWith(
               tsm.publishArtifacts,
-              '<cwd>/hermione-images/test/bro/bar.reference.png => .teamcity/hermione-images/test/bro'
+              '<cwd>/hermione-images/test/bro/bar.reference.png => hermione-images/test/bro'
             );
             assert.calledWithMatch(tsm.testMetadata, {
                 testName: 'test [bro]',
                 type: 'image',
-                value: '.teamcity/hermione-images/test/bro/foo.reference.png'
+                value: 'hermione-images/test/bro/foo.reference.png'
             });
             assert.calledWithMatch(tsm.testMetadata, {
                 testName: 'test [bro]',
                 type: 'image',
-                value: '.teamcity/hermione-images/test/bro/bar.reference.png'
+                value: 'hermione-images/test/bro/bar.reference.png'
             });
         });
 
@@ -284,21 +284,21 @@ describe('handlers', () => {
             );
             assert.calledWith(
               tsm.publishArtifacts,
-              '<cwd>/hermione-images/test/bro/foo.reference.png => .teamcity/hermione-images/test/bro'
+              '<cwd>/hermione-images/test/bro/foo.reference.png => hermione-images/test/bro'
             );
             assert.calledWith(
               tsm.publishArtifacts,
-              '<cwd>/hermione-images/test/bro/bar.reference.png => .teamcity/hermione-images/test/bro'
+              '<cwd>/hermione-images/test/bro/bar.reference.png => hermione-images/test/bro'
             );
             assert.calledWithMatch(tsm.testMetadata, {
                 testName: 'test [bro]',
                 type: 'image',
-                value: '.teamcity/hermione-images/test/bro/foo.reference.png'
+                value: 'hermione-images/test/bro/foo.reference.png'
             });
             assert.calledWithMatch(tsm.testMetadata, {
                 testName: 'test [bro]',
                 type: 'image',
-                value: '.teamcity/hermione-images/test/bro/bar.reference.png'
+                value: 'hermione-images/test/bro/bar.reference.png'
             });
         });
 
@@ -321,12 +321,12 @@ describe('handlers', () => {
             );
             assert.calledWith(
               tsm.publishArtifacts,
-              '<cwd>/hermione-images/test/bro/bar.current.png => .teamcity/hermione-images/test/bro'
+              '<cwd>/hermione-images/test/bro/bar.current.png => hermione-images/test/bro'
             );
             assert.calledWithMatch(tsm.testMetadata, {
                 testName: 'test [bro]',
                 type: 'image',
-                value: '.teamcity/hermione-images/test/bro/bar.current.png'
+                value: 'hermione-images/test/bro/bar.current.png'
             });
         });
 
@@ -349,12 +349,12 @@ describe('handlers', () => {
             assert.calledOnce(saveDiffTo);
             assert.calledWith(
               tsm.publishArtifacts,
-              '<cwd>/hermione-images/test/bro/bar.diff.png => .teamcity/hermione-images/test/bro'
+              '<cwd>/hermione-images/test/bro/bar.diff.png => hermione-images/test/bro'
             );
             assert.calledWithMatch(tsm.testMetadata, {
                 testName: 'test [bro]',
                 type: 'image',
-                value: '.teamcity/hermione-images/test/bro/bar.diff.png'
+                value: 'hermione-images/test/bro/bar.diff.png'
             });
         });
 
@@ -375,12 +375,12 @@ describe('handlers', () => {
             );
             assert.calledWith(
               tsm.publishArtifacts,
-              '<cwd>/hermione-images/test/bro/Error.png => .teamcity/hermione-images/test/bro'
+              '<cwd>/hermione-images/test/bro/Error.png => hermione-images/test/bro'
             );
             assert.calledWithMatch(tsm.testMetadata, {
                 testName: 'test [bro]',
                 type: 'image',
-                value: '.teamcity/hermione-images/test/bro/Error.png'
+                value: 'hermione-images/test/bro/Error.png'
             });
         });
     });
