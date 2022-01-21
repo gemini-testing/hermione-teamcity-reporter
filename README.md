@@ -39,6 +39,20 @@ module.exports = {
 };
 ```
 
+### reportScreenshots
+
+Boolean, whether to report screenshots as [test metadata](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html). `true` by default.
+
+```
+module.exports = {
+    plugins: {
+        'teamcity-reporter': {
+            reportScreenshots: false
+        }
+    }
+};
+```
+
 ### imagesDir
 
 String, directory to save images to. `hermione-images` by default.
