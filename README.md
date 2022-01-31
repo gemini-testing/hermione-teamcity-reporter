@@ -41,7 +41,7 @@ module.exports = {
 
 ### reportScreenshots
 
-Boolean, whether to report screenshots as [test metadata](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html). `true` by default.
+`'always' | 'onlyFailures' | false`, whether to report screenshots as [test metadata](https://www.jetbrains.com/help/teamcity/reporting-test-metadata.html). `'onlyFailures'` by default.
 
 ```
 module.exports = {
