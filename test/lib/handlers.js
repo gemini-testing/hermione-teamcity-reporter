@@ -1,16 +1,37 @@
 'use strict';
 
+var path = require('path');
+var fs = require('fs-extra');
 const tsm = require('teamcity-service-messages');
 
-const handlers = require('../../lib/handlers');
+const handlersModule = require('../../lib/handlers');
+
+const resolveImmediately = () => ({
+    then: (callback) => callback()
+});
 
 describe('handlers', () => {
     const sandbox = sinon.sandbox.create();
+    let handlers;
+    let saveDiffTo;
 
     beforeEach(() => {
-        ['testIgnored', 'testStarted', 'testFailed', 'testFinished'].forEach((method) => {
+        [
+            'testIgnored',
+            'testStarted',
+            'testFailed',
+            'testFinished',
+            'testMetadata',
+            'publishArtifacts'
+        ].forEach((method) => {
             sandbox.stub(tsm, method).returns(tsm);
         });
+        sandbox.stub(path, 'resolve', path.join.bind(path, '<cwd>'));
+        sandbox.stub(fs, 'ensureDirSync');
+        sandbox.stub(fs, 'copy', resolveImmediately);
+        sandbox.stub(fs, 'outputFile', resolveImmediately);
+        saveDiffTo = sandbox.spy(resolveImmediately);
+        handlers = handlersModule.getHandlers({});
     });
 
     afterEach(() => sandbox.restore());
@@ -22,6 +43,31 @@ describe('handlers', () => {
 
         return test;
     };
+
+    const stubAssertViewResult = (stateName, isError) => {
+        const stub = {
+            stateName,
+            refImg: {
+                path: `path/to/${stateName}/ref`
+            },
+            currImg: {
+                path: `path/to/${stateName}/curr`
+            },
+            saveDiffTo
+        };
+        return isError ? Object.assign(new Error(), stub) : stub;
+    };
+
+    describe('initialization', () => {
+        it('should create directory for images', function() {
+            assert.calledWith(fs.ensureDirSync, 'hermione-images');
+        });
+
+        it('should support custom directory', function() {
+            handlersModule.getHandlers({imagesDir: 'imagesDir'});
+            assert.calledWith(fs.ensureDirSync, 'imagesDir');
+        });
+    });
 
     describe('.onTestPending', () => {
         it('should consider test as pending', () => {
@@ -66,6 +112,65 @@ describe('handlers', () => {
 
             assert.calledWith(tsm.testStarted, {name: 'test [bro]'});
             assert.calledWithMatch(tsm.testFinished, {name: 'test [bro]'});
+        });
+
+        it('should copy & report reference images', () => {
+            const test = stubTest({
+                title: 'test',
+                browserId: 'bro',
+                assertViewResults: [
+                    stubAssertViewResult('foo'),
+                    stubAssertViewResult('bar')
+                ]
+            });
+
+            handlers.onTestPass(test);
+
+            assert.calledWith(
+                fs.copy,
+                'path/to/foo/ref',
+                'hermione-images/test/bro/foo.reference.png'
+            );
+            assert.calledWith(
+                fs.copy,
+                'path/to/bar/ref',
+                'hermione-images/test/bro/bar.reference.png'
+            );
+            assert.calledWith(
+              tsm.publishArtifacts,
+              '<cwd>/hermione-images/test/bro/foo.reference.png => hermione-images/test/bro'
+            );
+            assert.calledWith(
+              tsm.publishArtifacts,
+              '<cwd>/hermione-images/test/bro/bar.reference.png => hermione-images/test/bro'
+            );
+            assert.calledWithMatch(tsm.testMetadata, {
+                testName: 'test [bro]',
+                type: 'image',
+                value: 'hermione-images/test/bro/foo.reference.png'
+            });
+            assert.calledWithMatch(tsm.testMetadata, {
+                testName: 'test [bro]',
+                type: 'image',
+                value: 'hermione-images/test/bro/bar.reference.png'
+            });
+        });
+
+        it('shouldn\'t copy or report any other images', () => {
+            const test = stubTest({
+                title: 'test',
+                browserId: 'bro',
+                assertViewResults: [
+                    stubAssertViewResult('foo')
+                ]
+            });
+
+            handlers.onTestPass(test);
+
+            assert.calledOnce(fs.copy);
+            assert.calledOnce(tsm.publishArtifacts);
+            assert.calledOnce(tsm.testMetadata);
+            assert.notCalled(saveDiffTo);
         });
     });
 
@@ -153,6 +258,130 @@ describe('handlers', () => {
             assert.calledWith(tsm.testStarted, {name: 'test [bro]'});
             assert.calledWithMatch(tsm.testFailed, {name: 'test [bro]'});
             assert.calledWithMatch(tsm.testFinished, {name: 'test [bro]'});
+        });
+
+        it('should copy & report reference images', () => {
+            const test = stubTest({
+                title: 'test',
+                browserId: 'bro',
+                assertViewResults: [
+                    stubAssertViewResult('foo'),
+                    stubAssertViewResult('bar', true)
+                ]
+            });
+
+            handlers.onTestFail(test);
+
+            assert.calledWith(
+              fs.copy,
+              'path/to/foo/ref',
+              'hermione-images/test/bro/foo.reference.png'
+            );
+            assert.calledWith(
+              fs.copy,
+              'path/to/bar/ref',
+              'hermione-images/test/bro/bar.reference.png'
+            );
+            assert.calledWith(
+              tsm.publishArtifacts,
+              '<cwd>/hermione-images/test/bro/foo.reference.png => hermione-images/test/bro'
+            );
+            assert.calledWith(
+              tsm.publishArtifacts,
+              '<cwd>/hermione-images/test/bro/bar.reference.png => hermione-images/test/bro'
+            );
+            assert.calledWithMatch(tsm.testMetadata, {
+                testName: 'test [bro]',
+                type: 'image',
+                value: 'hermione-images/test/bro/foo.reference.png'
+            });
+            assert.calledWithMatch(tsm.testMetadata, {
+                testName: 'test [bro]',
+                type: 'image',
+                value: 'hermione-images/test/bro/bar.reference.png'
+            });
+        });
+
+        it('should copy & report current images for failed assertions only', () => {
+            const test = stubTest({
+                title: 'test',
+                browserId: 'bro',
+                assertViewResults: [
+                    stubAssertViewResult('foo'),
+                    stubAssertViewResult('bar', true)
+                ]
+            });
+
+            handlers.onTestFail(test);
+
+            assert.calledWith(
+              fs.copy,
+              'path/to/bar/curr',
+              'hermione-images/test/bro/bar.current.png'
+            );
+            assert.calledWith(
+              tsm.publishArtifacts,
+              '<cwd>/hermione-images/test/bro/bar.current.png => hermione-images/test/bro'
+            );
+            assert.calledWithMatch(tsm.testMetadata, {
+                testName: 'test [bro]',
+                type: 'image',
+                value: 'hermione-images/test/bro/bar.current.png'
+            });
+        });
+
+        it('should copy & report diff images for failed assertions only', () => {
+            const test = stubTest({
+                title: 'test',
+                browserId: 'bro',
+                assertViewResults: [
+                    stubAssertViewResult('foo'),
+                    stubAssertViewResult('bar', true)
+                ]
+            });
+
+            handlers.onTestFail(test);
+
+            assert.calledWithMatch(
+              saveDiffTo,
+              'hermione-images/test/bro/bar.diff.png'
+            );
+            assert.calledOnce(saveDiffTo);
+            assert.calledWith(
+              tsm.publishArtifacts,
+              '<cwd>/hermione-images/test/bro/bar.diff.png => hermione-images/test/bro'
+            );
+            assert.calledWithMatch(tsm.testMetadata, {
+                testName: 'test [bro]',
+                type: 'image',
+                value: 'hermione-images/test/bro/bar.diff.png'
+            });
+        });
+
+        it('should copy & report error image', () => {
+            const test = stubTest({
+                title: 'test',
+                browserId: 'bro',
+                err: {screenshot: {base64: 'encodedScreenshot'}}
+            });
+
+            handlers.onTestFail(test);
+
+            assert.calledWith(
+              fs.outputFile,
+              'hermione-images/test/bro/Error.png',
+              'encodedScreenshot',
+              'base64'
+            );
+            assert.calledWith(
+              tsm.publishArtifacts,
+              '<cwd>/hermione-images/test/bro/Error.png => hermione-images/test/bro'
+            );
+            assert.calledWithMatch(tsm.testMetadata, {
+                testName: 'test [bro]',
+                type: 'image',
+                value: 'hermione-images/test/bro/Error.png'
+            });
         });
     });
 });

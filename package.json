@@ -15,7 +15,8 @@
   "author": "Eugene Gavryushin <job.egavr@yandex.ru>",
   "license": "ISC",
   "dependencies": {
-    "teamcity-service-messages": "^0.1.8"
+    "fs-extra": "^5.0.0",
+    "teamcity-service-messages": "^0.1.10"
   },
   "devDependencies": {
     "chai": "^3.5.0",

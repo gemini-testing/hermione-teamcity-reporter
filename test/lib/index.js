@@ -5,7 +5,7 @@ const EventEmitter = require('events').EventEmitter;
 const hermioneEvents = require('hermione/lib/constants/runner-events');
 
 const teamcityReporter = require('../../lib');
-const handlers = require('../../lib/handlers');
+const handlersModule = require('../../lib/handlers');
 
 describe('hermione-teamcity-reporter', () => {
     const sandbox = sinon.sandbox.create();
@@ -31,12 +31,16 @@ describe('hermione-teamcity-reporter', () => {
     });
 
     describe('handling of events', () => {
+        let handlers;
         beforeEach(() => {
-            initHermioneWithPlugin();
+            handlers = {
+                onTestPending: sandbox.spy(),
+                onTestPass: sandbox.spy(),
+                onTestFail: sandbox.spy()
+            };
+            sandbox.stub(handlersModule, 'getHandlers').returns(handlers);
 
-            sandbox.stub(handlers, 'onTestPending');
-            sandbox.stub(handlers, 'onTestPass');
-            sandbox.stub(handlers, 'onTestFail');
+            initHermioneWithPlugin();
         });
 
         it('should handle event `TEST_PENDING`', () => {
